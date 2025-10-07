@@ -1,15 +1,23 @@
 export default function ResultCard({ result }) {
-    const { dailyKcal, gramsPerDay } = result;
+    // Ensure we safely access properties (using nullish coalescing for safety)
+    const dailyKcal = result.dailyKcal ?? 0;
+    const cupsPerDay = result.cupsPerDay ?? 0;
+  
     return (
       <div className="result-card">
         <h2>Feeding Recommendation</h2>
-        <p>Daily calories: {dailyKcal.toFixed(0)} kcal</p>
-        <p>Daily food: {gramsPerDay.toFixed(1)} grams</p>
-        <p>
-          Suggestion: Feed twice a day (~
-          {(gramsPerDay / 2).toFixed(1)} g per meal)
-        </p>
+        
+        {result.isWeightLoss && (
+          <p className="weight-loss-note">
+            **This is a Weight Loss calculation.** <br />
+            Calories are based on a **{result.weightUsed.toFixed(1)} kg** target weight.
+          </p>
+        )}
+  
+        <p>Daily Calories: **{dailyKcal.toFixed(0)}** kcal</p>
+        <p>Daily Food: **{cupsPerDay.toFixed(2)}** cups</p>
+  
+        {/* Add a button to reset the calculation if needed */}
       </div>
     );
   }
-  

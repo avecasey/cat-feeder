@@ -13,8 +13,8 @@ export default function CaseyForm({ onSubmit, onBack }) {
     const selectedCat = ourCats.find(cat => cat.name === selectedCatName);
     
     if (selectedCat) {
-      // Pass the cat's weight, gender, and selected brand to the onSubmit function
-      onSubmit([selectedCat.weight, selectedCat.gender, brand]);
+      // Pass the cat's weight, activity, and selected brand to the onSubmit function
+      onSubmit([selectedCat.weight, selectedCat.active, selectedCat.overweight, brand]);
     }
   };
 
@@ -28,7 +28,7 @@ export default function CaseyForm({ onSubmit, onBack }) {
         >
           {ourCats.map((cat) => (
             <option key={cat.name} value={cat.name}>
-              {cat.name} ({cat.weight} kg)
+              {cat.name} ({cat.weight} lbs)
             </option>
           ))}
         </select>

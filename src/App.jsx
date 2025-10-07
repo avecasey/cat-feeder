@@ -1,118 +1,61 @@
-// import React, { useState } from "react";
-// import { foods } from "./data/foods";
-// import CatForm from "./components/CatForm";
-// import ResultCard from "./components/ResultCard";
-// import "./App.css";
-
-// export default function App() {
-//   const [catData, setCatData] = useState(null);
-
-//   const calculateFeeding = (weight, gender, brand) => {
-//     const food = foods.find((f) => f.brand === brand);
-//     const kcalPerGram = food?.kcalPerGram ?? 3.6;
-
-//     // Basic calorie formula (approximation)
-//     const RER = 70 * Math.pow(weight, 0.75);
-//     const multiplier = gender === "male" ? 1.2 : 1.0;
-//     const dailyKcal = RER * multiplier;
-//     const gramsPerDay = dailyKcal / kcalPerGram;
-
-//     return { dailyKcal, gramsPerDay };
-//   };
-
-//   return (
-//     <div className="app">
-//       <h1>🐱 Cat Feeding Calculator</h1>
-//       <CatForm onSubmit={(data) => setCatData(calculateFeeding(...data))} />
-//       {catData && <ResultCard result={catData} />}
-//     </div>
-//   );
-// }
-
 import React, { useState } from "react";
 import { foods } from "./data/foods";
 import CatForm from "./components/CatForm";
-import CaseyForm from "./components/CaseyForm"; // Import CaseyForm
 import ResultCard from "./components/ResultCard";
 import "./App.css";
 
-// Define an enum or constants for view states for clarity
-const VIEWS = {
-  DEFAULT: "default",
-  CASEY: "casey",
-};
+// You will also need to update CaseyForm and its handler later, but starting with CatForm:
 
 export default function App() {
   const [catData, setCatData] = useState(null);
-  // New state to track the current view (Default Form or Casey's Form)
-  const [currentView, setCurrentView] = useState(VIEWS.DEFAULT);
 
-  const calculateFeeding = (weight, gender, brand) => {
+  // NOTE: Added 'goalWeight' to the parameters here
+  const calculateFeeding = (weight, gender, brand, goalWeight = null) => {
     const food = foods.find((f) => f.brand === brand);
-    // Use optional chaining with a nullish coalescing operator for safety
-    const kcalPerGram = food?.kcalPerGram ?? 3.6; 
+    const kcalPerCup = food?.kcalPerCup ?? 3.6;
 
-    // Basic calorie formula (approximation)
-    // RER (Resting Energy Requirement)
-    const RER = 70 * Math.pow(weight, 0.75); 
-    // Multiplier for intact male (1.2) vs. spayed/neutered or female (1.0) - simplified
-    const multiplier = gender === "male" ? 1.2 : 1.0; 
-    const dailyKcal = RER * multiplier;
-    const gramsPerDay = dailyKcal / kcalPerGram;
-
-    return { dailyKcal, gramsPerDay };
-  };
-
-  const handleCalculate = (data) => {
-    // data is the array [weight, gender, brand]
-    setCatData(calculateFeeding(...data));
-  };
-  
-  // Logic to render the correct form/view
-  const renderContent = () => {
-    // If a result is calculated, show the ResultCard
-    if (catData) {
-      return <ResultCard result={catData} />;
-    }
-
-    // If no result, show the appropriate form or the initial buttons
-    if (currentView === VIEWS.CASEY) {
-      return (
-        <CaseyForm 
-          onSubmit={handleCalculate} 
-          onBack={() => setCurrentView(VIEWS.DEFAULT)} // Button to go back
-        />
-      );
-    } 
+    // --- Core Logic Change Here ---
     
-    // Default View: Show the initial button and the standard form
-    return (
-      <>
-        <button 
-          onClick={() => setCurrentView(VIEWS.CASEY)} 
-          style={{ marginBottom: '20px', padding: '10px 20px', fontSize: '1.2em' }}
-        >
-          I am Casey
-        </button>
-        <CatForm onSubmit={handleCalculate} />
-      </>
-    );
-  };
+    // 1. Determine the weight to use in the RER calculation:
+    //    Use goalWeight if provided (for weight loss), otherwise use the current weight.
+    const weightForCalculation = goalWeight !== null && goalWeight < weight
+      ? goalWeight
+      : weight;
 
+    // 2. Determine the Calorie Multiplier:
+    let multiplier;
+    if (goalWeight !== null && goalWeight < weight) {
+      // If aiming for weight loss, use a specific weight loss multiplier (0.8 to 1.0)
+      multiplier = 1.0; 
+      // Vets often recommend 0.8 for strict weight loss, 1.0 for maintenance/obese prone
+    } else {
+      // Otherwise, use the standard maintenance multipliers (simplified for this app)
+      multiplier = gender === "male" ? 1.2 : 1.0;
+    }
+    // --- End Core Logic Change ---
+
+
+    // Basic calorie formula (RER and DER)
+    const RER = 70 * Math.pow(weightForCalculation, 0.75); 
+    const dailyKcal = RER * multiplier;
+    const cupsPerDay = dailyKcal / kcalPerCup;
+    
+    // Pass the goal weight info for display in the ResultCard
+    return { 
+      dailyKcal, 
+      cupsPerDay,
+      isWeightLoss: goalWeight !== null && goalWeight < weight,
+      weightUsed: weightForCalculation
+    };
+  };
 
   return (
     <div className="app">
       <h1>🐱 Cat Feeding Calculator</h1>
-      {/* Button to clear the result and go back to the default view */}
-      {catData && (
-        <button 
-          onClick={() => setCatData(null)}
-          style={{ marginBottom: '20px' }}
-        >
-          New Calculation
-        </button>
-      )}
-      {renderContent()}
+      {/* Updated onSubmit to handle the new array of arguments */}
+      <CatForm onSubmit={(data) => setCatData(calculateFeeding(...data))} />
+      
+      {catData && <ResultCard result={catData} />}
     </div>
   );
 }
