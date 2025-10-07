@@ -1,0 +1,27 @@
+.app {
+    text-align: center;
+    font-family: sans-serif;
+    padding: 2rem;
+  }
+  
+  .cat-form {
+    margin: 1rem auto;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    max-width: 300px;
+  }
+  
+  .cat-form input,
+  .cat-form select {
+    padding: 0.5rem;
+  }
+  
+  .result-card {
+    margin-top: 1.5rem;
+    border: 1px solid #ccc;
+    padding: 1rem;
+    border-radius: 10px;
+    background: #f8f8f8;
+  }
+  
